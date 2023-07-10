@@ -4,11 +4,11 @@ library(ggplot2)
 
 # Add dummy parents so tassel can convert to ABH ----
 
-vcf_input <- read.vcfR("../run/AIR_B73_filtered_imputed.vcf")
-fixed <- getFIX(andosol)
+vcf_input <- read.vcfR("../run/AIR_B73_imputed_1.vcf")
+fixed <- getFIX(vcf_input)
 
 # get biallelic sites                         & exclude indels
-biallelic <- vcf_input [is.biallelic(andosol) & !is.na(fixed[,"ALT"]) & !is.na(fixed[,"REF"])]
+biallelic <- vcf_input [is.biallelic(vcf_input) & !is.na(fixed[,"ALT"]) & !is.na(fixed[,"REF"])]
 
 # Get taxa by parental group either CML530 or ANDOSOL
 recur_name <- "CML530"
@@ -65,7 +65,7 @@ donor_gt_in <- extract.gt(biallelic[,is_donor])
 donor_cs <- get_consensus(donor_gt_in,  name= donor_name)
 
 recur_gt_out <- get_consensus(recur_gt_in, name= recur_name)
-donor_gt_out <- switch_gt(recur_cs)
+donor_gt_out <- switch_gt(recur_gt_out)
 
 colnames(donor_gt_out)[1] <- donor_name
 
@@ -83,10 +83,6 @@ out_gt <- cbind(
 colnames(out_gt)[1]<-"FORMAT"
 
 biallelic@gt <- out_gt
-
-biallelic@gt[1:5,1:5]
-
-biallelic@fix
 
 write.vcf(biallelic, file ="../run/AIR_dummy_parents.vcf.gz")
 
@@ -244,13 +240,16 @@ system(toABH_cmd)
 
 # filter ABH ----
 abh_in <- read.csv("../run/AIR_B73_ABH.csv") 
-  
+abh_in[1:5,1:5]
 # sorted according to line (LANAP NUMBER)
-abh_out <- abh_in %>% 
+abh_out <- rbind( abh_in[1,],
+  abh_in %>% 
   inner_join(with_gt) %>% select(line,id,everything()) %>%
   arrange(line) %>%
   select(-line)
+)
 
+abh_out[1:5,1:5]
 
 nrow(abh_in)
 nrow(abh_out)

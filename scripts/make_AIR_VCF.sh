@@ -1,7 +1,7 @@
 #/bin/zsh
 TASSEL5="/Applications/TASSEL 5/run_pipeline.pl"
-INPUT_VCF="../data/ANDOSOL_PTRILS_merged.vcf"
-NOHET_VCF="ANDOSOL_merged_nohet.vcf"
+INPUT_VCF="../data/AIR_PTRILS_merged.vcf"
+NOPTRIL_VCF="AIR_B73.vcf"
 
 # This list has LANAP duplicated taxa removed
 
@@ -9,11 +9,9 @@ AIRB73_LIST="../data/AIR_ICPMS_taxa_B73.list"
 IMPUTED_VCF="AIR_B73_imputed"
 
 # Remove PTRILs taxa from VCF
-# Remmove hets from the VCF
 "$TASSEL5" -vcf ${INPUT_VCF} \
            -includeTaxaInFile $AIRB73_LIST \
-           -homozygous \
-           -export ${NOHET_VCF} \
+           -export ${NOPTRIL_VCF} \
            -exportType VCF
            
            
