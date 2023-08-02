@@ -80,6 +80,7 @@ BC2S3<-read.cross(
   phefile= "../run/AIR_PHENO_sorted.csv",
   BC.gen=2, F.gen=3)
 
+
 summary(BC2S3)
 
 gt <- pull.geno(BC2S3)
@@ -215,6 +216,11 @@ bc2s3
 # Warning messages:
 #   1: In summary.cross(x) : Strange genotype pattern.
 #   2: In summary.cross(x) : Strange genotype pattern.
+
+
+# Check missing genotypes
+quartz()
+geno.image(cross)
 
 
 save(BC2S3, file="../run/AIR_cross.Rdata")

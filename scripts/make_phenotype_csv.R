@@ -27,8 +27,8 @@ ionome[duplicated(ionome$id),] %>%
 
 
 #  Should I add this info?
-# donor_range <-read.csv("../data/donor_range.csv") %>%
-#   arrange(range, Code)
+donor_range <-read.csv("../data/donor_range.csv") %>%
+   arrange(range, Code)
 
 # discard outliers :/
 
@@ -99,12 +99,19 @@ plots$con <- plot_con(pca,1:6)
 ionome <- cbind(
   ionome %>%
   select(id,range:ICPMS_sample,weight),
-  no_outliers)
-
+  no_outliers) %>%
+  dplyr::select(id,range:ICPMS_sample, weight, all_of(reliable))
 
 distro <- ionome  %>%
   gather(key="var", value="value", all_of(reliable)) %>% # Convert to key-value pairs
   dplyr::mutate(donor = factor(donor), var =factor(var)) 
+
+distro$var <- factor(distro$var)
+
+distro$var <- forcats::fct_reorder(
+  distro$var, distro$value,
+  .na_rm = TRUE, .desc = TRUE)
+
 
 plots$density <- distro  %>%
   ggplot(aes(value, group = donor)) +  # Plot the values
@@ -114,17 +121,27 @@ plots$density <- distro  %>%
   ggpubr::theme_classic2() 
 
 
+
+
 plots$box <- distro %>%# Convert to key-value pairs
   ggplot(aes(x=value, y = donor, group = donor, col= range)) + # Plot the values
-  facet_wrap(~ var, scales = "free_x") +    # In separate panels
+  facet_wrap(~ var, scales = "free_x", ncol = 2, dir ="v") +    # In separate panels
   geom_vline(data = distro %>% 
                group_by(var) %>%
                summarise(mean = mean(value, na.rm = TRUE)),
              aes(xintercept = mean)) +
   geom_boxplot(aes(alpha =1)) +
   scale_alpha(guide = 'none') +
+  xlab("Kernel Concentration [mg/kg]") +
+  ylab("Andosol Introgression Donor") +
   ggpubr::theme_classic2(base_size = 10) +
-  ggplot2::theme(legend.position = "top")
+  ggplot2::theme(legend.position = "top",
+                 strip.background = element_blank(),
+                 strip.text = element_text(face = "bold", size=12))
+
+
+quartz()
+print(plots$box)
 
 
 # Hierarchical clustering of features ######
@@ -200,11 +217,6 @@ field_traits <- field_traits %>%
 
 field_traits$donor <- field_traits$id
 field_traits$donor <- paste0("AN",substr(field_traits$donor,6,7))
-
-
-range_donor <- ionome %>% 
-  dplyr::select(range:donor) %>%
-  unique()
 
 
 pheno <- field_traits %>% 
